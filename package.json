@@ -1,0 +1,37 @@
+{
+  "name": "sync-mcp",
+  "version": "0.0.1",
+  "description": "One-click synchronization tool for MCP configuration.",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/william-garden/sync-mcp.git"
+  },
+  "keywords": [
+    "mcp",
+    "sync",
+    "codex",
+    "claude",
+    "code",
+    "gemini"
+  ],
+  "author": "William Koo",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/william-garden/sync-mcp/issues"
+  },
+  "homepage": "https://github.com/william-garden/sync-mcp#readme",
+  "type": "module",
+  "main": "src/cli.js",
+  "bin": {
+    "sync-mcp": "./bin/sync-mcp.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@inquirer/prompts": "^5.0.1"
+  }
+}
