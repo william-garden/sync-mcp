@@ -1,211 +1,204 @@
-﻿# sync-mcp
+﻿# **sync-mcp**
 
-一键同步 MCP 配置工具。
-[English](/william-garden/sync-mcp/tree/main/src/docs/en_READMD.md)
+One-Click MCP Configuration Sync Tool. 
+[中文](https://github.com/william-garden/sync-mcp/blob//master/docs/zh.md)
 
-## 1. 概述
+## 1. Overview
 
-`sync-mcp` 是一个基于 Node.js 的命令行工具，旨在解决开发人员在多个 IDE、代码编辑器和 CLI 工具之间手动同步通用 MCP 配置的痛点。用户可以通过简单的命令，将一个工具的配置文件（源）安全地同步到另一个工具（目标），从而实现配置的统一和自动化管理。
+sync-mcp is a Node.js-based command-line tool designed to solve the pain point of manually syncing universal MCP configurations across multiple IDEs, code editors, and CLI tools. Users can use simple commands to safely synchronize the configuration file of one tool (source) to another tool (target), thereby achieving unified and automated configuration management.
 
-## 2. 技术规格
+## 2. Technical Specifications
 
-- **环境**：Node.js 18+（需要 ESM 支持及现代 API）。
-- **分发方式**：通过 npm 分发，支持 `npx sync-mcp` 直接执行，也可 `npm i -g sync-mcp` 全局安装。
-- **运行依赖**：仅依赖跨平台文件操作与 CLI 交互类库，无需原生编译环境。
-- **支持平台**：Linux、Windows、macOS 均可稳定运行。
+* Environment: Node.js 18+ (requires ESM support and modern APIs).  
+* Distribution: Distributed via npm, supports direct execution with npx sync-mcp or global installation with npm i -g sync-mcp.  
+* Runtime Dependencies: Only depends on cross-platform file system and CLI interaction libraries; no native compilation environment required.  
+* Supported Platforms: Runs stably on Linux, Windows, and macOS.
 
-## 3. 使用方式
+## 3. Usage
 
-### 3.1. 直接同步
+### 3.1. Direct Sync
 
-通过提供源和目标工具的关键词，直接执行同步。
+Execute synchronization directly by providing keywords for the source and target tools.
 
 ```bash
 npx sync-mcp <source_keyword> <target_keyword>
 ```
 
-### 3.2. 交互同步
+### 3.2. Interactive Sync
 
-当不带任何参数执行命令时，进入交互式问答模式。
+When the command is executed without any arguments, it enters interactive mode.
 
 ```bash
 npx sync-mcp
 ```
 
-**操作流程:**
+Operation Flow:
 
-1. **选择源 (Select Source):**
+1. Select Source:
     ```
-    ? Select the configuration source file (选择源配置文件): (Use arrow keys)
-    > 1. VS Code (~/.vscode/mcp.json)
-        2. Cursor (~/.cursor/mcp.json)
-        3. GitHub Copilot CLI (~/.copilot/mcp-config.json)
+    ? Select the configuration source file: (Use arrow keys)  
+    > 1. VS Code (~/.vscode/mcp.json)  
+        2. Cursor (~/.cursor/mcp.json)  
+        3. GitHub Copilot CLI (~/.copilot/mcp-config.json)  
         4. Customize
     ```
-
-2. **选择目标 (Select Target):**
+2. Select Target:  
+    ```   
+    ? Select the configuration target file: (Use arrow keys)  
+    > 1. VS Code (~/.vscode/mcp.json)  
+        2. Cursor (~/.cursor/mcp.json)  
+        3. GitHub Copilot CLI (~/.copilot/mcp-config.json)  
+        4. Customize (Select a target tool or create a new configuration)
     ```
-    ? Select the configuration target file (选择目标配置文件): (Use arrow keys)
-    > 1. VS Code (~/.vscode/mcp.json)
-        2. Cursor (~/.cursor/mcp.json)
-        3. GitHub Copilot CLI (~/.copilot/mcp-config.json)
-        4. Customize (选择一个目标工具或创建新配置)
-    ```
+## 4. Tool Matching Keywords
 
-## 4. 工具匹配关键词
-
-| 工具名称 | 支持的关键词 |
+| Tool Name | Supported Keywords |  
 | :--- | :--- |
-| Codex | `codex`, `openai`, `codex cli` |
-| Claude Code | `claude`, `claude-code`, `claude code`, `anthropic` |
-| Cursor | `cursor`, `cursor ide` |
-| Gemini CLI | `gemini`, `gemini cli`, `google`, `gcloud` |
-| GitHub Copilot CLI | `copilot`, `copilot cli`, `github`, `gh` |
+| Codex | `codex`, `openai`, `codex cli` |  
+| Claude Code | `claude`, `claude-code`, `claude code`, `anthropic` |  
+| Cursor | `cursor`, `cursor ide` |  
+| Gemini CLI | `gemini`, `gemini cli`, `google`, `gcloud` |  
+| GitHub Copilot CLI | `copilot`, `copilot` `cli`, `github`, `gh` |  
 | Visual Studio Code | `vscode`, `vs code`, `vs-code`, `code` |
 
-## 5. 支持的工具与配置路径
+## 5. Supported Tools and Configuration Paths
 
-| 工具名称 | Linux / macOS 路径 | Windows 路径 | 文档地址 |
+| Tool Name | Linux / macOS Path | Windows Path | Documentation URL |  
 | :--- | :--- | :--- | :--- |
-| **Codex** | `~/.codex/config.toml` | `%USERPROFILE%\.codex\config.toml` | [Codex configuration](https://github.com/openai/codex/blob/main/docs/config.md) |
-| **Claude Code** | `~/.claude.json` | `%USERPROFILE%\.claude.json` | [Claude Code MCP guide](https://docs.anthropic.com/en/docs/claude-code) |
-| **Cursor** | `~/.cursor/mcp.json` | `%APPDATA%\Cursor\mcp.json` | [Cursor MCP guide](https://docs.cursor.com/context/mcp) |
-| **Gemini CLI (gcloud)** | `~/.gemini/settings.json` | `%APPDATA%\.gemini\settings.json` | [Gemini CLI MCP server](https://github.com/google-gemini/gemini-cli/blob/main/docs/tools/mcp-server.md) |
-| **GitHub Copilot CLI** | `~/.copilot/mcp-config.json` | `%USERPROFILE%\.copilot\mcp-config.json` | [Copilot CLI MCP usage](https://github.com/github/docs/blob/main/content/copilot/how-tos/use-copilot-agents/use-copilot-cli.md) |
-| **Visual Studio Code** | `~/.vscode/mcp.json` | `%APPDATA%\Roaming\Code\User\mcp.json` | [VS Code MCP servers](https://code.visualstudio.com/docs/copilot/copilot-customization/copilot/chat/mcp-servers) |
+| Codex | `~/.codex/config.toml` | `%USERPROFILE%\.codex\config.toml` | [Codex configuration](https://github.com/openai/codex/blob/main/docs/config.md) |
+| Claude Code | `~/.claude.json` | `%USERPROFILE%\.claude.json` | [Claude Code MCP guide](https://docs.anthropic.com/en/docs/claude-code) |
+| Cursor | `~/.cursor/mcp.json` | `%APPDATA%\Cursor\mcp.json` | [Cursor MCP guide](https://docs.cursor.com/context/mcp) |
+| Gemini CLI (gcloud) | `~/.gemini/settings.json` | `%APPDATA%\.gemini\settings.json` | [Gemini CLI MCP server](https://github.com/google-gemini/gemini-cli/blob/main/docs/tools/mcp-server.md) |
+| GitHub Copilot CLI | `~/.copilot/mcp-config.json` | `%USERPROFILE%\.copilot\mcp-config.json` | [Copilot CLI MCP usage](https://github.com/github/docs/blob/main/content/copilot/how-tos/use-copilot-agents/use-copilot-cli.md) |
+| Visual Studio Code | `~/.vscode/mcp.json` | `%APPDATA%\Roaming\Code\User\mcp.json` | [VS Code MCP servers](https://code.visualstudio.com/docs/copilot/copilot-customization/copilot/chat/mcp-servers) |
 
 ### 5.1. Codex
 
-**默认配置文件**：`~/.codex/config.toml`
+Default configuration file: `~/.codex/config.toml`
 
 ```toml
-# ~/.codex/config.toml
-[mcp_servers.context7]
-command ="cmd"
-args = [
-    "/c", "npx", "-y",
-    "@upstash/context7-mcp",
-    "--api-key="YOUR_API_KEY",
-    "--stdio"
-]
-env = { SystemRoot="C:\\Windows", PROGRAMFILES="C:\\Program Files" }
+# ~/.codex/config.toml  
+[mcp_servers.context7]  
+command ="cmd"  
+args = [  
+    "/c", "npx", "-y",  
+    "@upstash/context7-mcp",  
+    "--api-key="YOUR_API_KEY",  
+    "--stdio"  
+]  
+env = { SystemRoot="C:\\Windows", PROGRAMFILES="C:\\Program Files" }  
 startup_timeout_ms = 60_000
 ```
 
 ### 5.2. Claude Code
 
-**默认配置文件**：`~/.claude.json`
+Default configuration file: `~/.claude.json`
 
 ```json
-{
-  "mcpServers": {
-    "context7": {
-        "type": "stdio",
-        "command": "npx",
-        "args": [
-            "-y",
-            "@upstash/context7-mcp",
-            "--api-key",
-            "YOUR_API_KEY"
-        ],
-        "env": {}
-    }
-  }
+{  
+  "mcpServers": {  
+    "context7": {  
+        "type": "stdio",  
+        "command": "npx",  
+        "args": [  
+            "-y",  
+            "@upstash/context7-mcp",  
+            "--api-key",  
+            "YOUR_API_KEY"  
+        ],  
+        "env": {}  
+    }  
+  }  
 }
 ```
 
 ### 5.3. Cursor
 
-- **默认配置文件**：`~/.cursor/mcp.json`
+Default configuration file: `~/.cursor/mcp.json`
 
 ```json
-{
-    "mcpServers": {
-        "context7": {
-            "command": "npx",
-            "args": ["-y", "@upstash/context7-mcp", "--api-key", "YOUR_API_KEY"]
-        }
-    }
+{  
+    "mcpServers": {  
+        "context7": {  
+            "command": "npx",  
+            "args": ["-y", "@upstash/context7-mcp", "--api-key", "YOUR_API_KEY"]  
+        }  
+    }  
 }
 ```
 
 ### 5.4. Gemini CLI (gcloud)
 
-- **默认配置文件**：`~/.gemini/settings.json`
+Default configuration file: ~/.gemini/settings.json
 
 ```json
-{
-    "mcpServers": {
-        "context7": {
-            "command": "npx",
-            "args": ["-y", "@upstash/context7-mcp", "--api-key", "YOUR_API_KEY"]
-        }
-    }
+{  
+    "mcpServers": {  
+        "context7": {  
+            "command": "npx",  
+            "args": ["-y", "@upstash/context7-mcp", "--api-key", "YOUR_API_KEY"]  
+        }  
+    }  
 }
 ```
 
 ### 5.5. GitHub Copilot CLI
 
-- **默认配置文件**：`~/.copilot/mcp-config.json`
+Default configuration file: `~/.copilot/mcp-config.json`
 
 ```json
-{
-  "mcpServers": {
-        "docs": {
-            "command": "npx",
-            "args": ["-y", "@upstash/context7-mcp", "--api-key", "YOUR_API_KEY"]
-        }
-  }
+{  
+  "mcpServers": {  
+        "docs": {  
+            "command": "npx",  
+            "args": ["-y", "@upstash/context7-mcp", "--api-key", "YOUR_API_KEY"]  
+        }  
+  }  
 }
 ```
 
 ### 5.6. Visual Studio Code
 
-- **默认配置文件**：`~/.vscode/mcp.json`
-
+Default configuration file: `~/.vscode/mcp.json`
 ```json
-{
-    "servers": {
-        "context7": {
-            "command": "npx",
-            "args": ["-y", "@upstash/context7-mcp", "--api-key", "YOUR_API_KEY"]
-        }
-    }
+{  
+    "servers": {  
+        "context7": {  
+            "command": "npx",  
+            "args": ["-y", "@upstash/context7-mcp", "--api-key", "YOUR_API_KEY"]  
+        }  
+    }  
 }
 ```
 
-## 6. 核心功能
+## 6. Core Features
 
-- **双模式操作**：支持快速直接的单行命令同步，以及引导式的交互问答同步。
-- **模糊参数匹配**：用户无需记住工具的精确名称，工具会自动匹配常用关键词。
-- **跨平台兼容**：完美支持 Linux、Windows 和 macOS 环境，自动处理不同操作系统的路径格式。
-- **自动路径检测**：内置主流开发工具的默认配置路径，能自动发现本地存在的配置文件。
-- **安全备份机制**：在执行任何覆盖操作前，自动备份目标配置文件，确保操作可逆，防止意外损坏。
-- **自定义与扩展**：支持用户手动指定配置文件路径，并能在目标配置文件不存在时自动创建。
+* **Dual-Mode Operation**: Supports both fast, direct single-line command sync and a guided interactive mode.  
+* **Fuzzy Parameter Matching**: Users don't need to remember the exact tool names; the tool automatically matches common keywords.  
+* **Cross-Platform Compatibility**: Perfect support for Linux, Windows, and macOS environments, automatically handling different OS path formats.  
+* **Automatic Path Detection**: Built-in default configuration paths for mainstream development tools, automatically discovering locally existing configuration files.  
+* **Safe Backup Mechanism**: Automatically backs up the target configuration file before performing any overwrite operation, ensuring the operation is reversible and preventing accidental data loss.  
+* **Customization and Extension**: Supports manually specifying configuration file paths and can automatically create target files if they do not exist.
 
+## 7. File Backup Mechanism
 
-## 7. 文件备份机制
+Safety is one of the core principles of this tool. Before any synchronization operation (i.e., overwriting the target file) occurs, the following backup process **must** be executed:
 
-安全是本工具的核心原则之一。在任何同步操作（即覆盖目标文件）发生 **之前**，必须执行以下备份流程：
+1. **Safety Principle**: Before any operation writes to the target file, a backup must be completed to ensure the operation is reversible.  
+2. **Default Location**: Creates a `~/.sync-mcp/backup/` directory in the user's home directory. If it doesn't exist, it is created automatically.  
+3. **Backup Content**: A complete copy of the **current target file**.  
+4. **Backup Path**:  
+   * Root directory: `~/.sync-mcp/backup/  `
+   * Subdirectory structure: `/<timestamp>/<original_directory_structure>/<original_filename>  `
+   * `<timestamp>`: Unix timestamp (in milliseconds) when the sync operation was executed, e.g., `1677619200000`  
+5. **Example**:  
+   * **Operation**: `npx sync-mcp vscode cursor`
+   * **Time**: `2025-10-24 18:00:00` (assuming timestamp `1761319200000`)  
+   * **Target file**: `~/.cursor/mcp.json` on Linux  
+   * **Action**: The program copies `~/.cursor/mcp.json` to `~/.sync-mcp/backup/1761319200000/.cursor/mcp.json ` 
+   * This prevents backup files from being overwritten and preserves the original file's path structure, making it easy to find and restore.
 
-1. **安全原则**：任何同步写入目标文件的操作前，必须完成备份，确保操作可逆。
-2. **默认位置**：在用户主目录下创建 `~/.sync-mcp/backup/` 目录，若不存在则自动建立。
-3. **备份内容**：完整复制 **当前的目标文件**。
-4. **备份路径**：
-    - 根目录：`~/.sync-mcp/backup/`
-    - 子目录结构：`/<timestamp>/<original_directory_structure>/<original_filename>`
-    - `<timestamp>`：执行同步操作时的 Unix 时间戳（毫秒），例如 `1677619200000`
-5. **示例**：
-    - **操作**：`npx sync-mcp vscode cursor`
-    - **时间**：`2025-10-24 18:00:00`（假设时间戳 `1761319200000`）
-    - **目标文件**：Linux 上为 `~/.cursor/mcp.json`
-    - **执行动作**：程序将 `~/.cursor/mcp.json` 复制到 `~/.sync-mcp/backup/1761319200000/.cursor/mcp.json`
-    - 这样既能防止备份文件被覆盖，又能完整保留原始文件的路径结构，便于查找和恢复。
+## 8. Platform Compatibility
 
-## 8. 平台兼容性
-
-- **操作系统**：必须在主流的 Linux 发行版（Ubuntu、CentOS 等）以及 Windows 10/11、macOS 系统上稳定运行。
-- **路径处理**：内部逻辑必须使用 Node.js `path` 模块中的 `path.join()`、`path.resolve()` 来处理文件路径，禁止硬编码 `/` 或 `\`。
-
----
-
+* Operating Systems: Must run stably on mainstream Linux distributions (Ubuntu, CentOS, etc.), as well as Windows 10/11 and macOS.  
+* Path Handling: Internal logic must use Node.js `path` module functions like `path.join()` and `path.resolve()` to handle file paths. Hardcoding `/` or `\` is prohibited.
