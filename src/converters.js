@@ -516,7 +516,6 @@ function parseTomlValue(rawValue) {
 function parseTomlArray(value) {
   const normalized = value
     .replace(/\r?\n/g, ' ')
-    .replace(/\\/g, '\\\\')
     .replace(/,\s*\]/g, ']');
 
   try {
@@ -530,7 +529,6 @@ function parseTomlInlineTable(value) {
   const normalized = value
     .replace(/([A-Za-z0-9_\-]+)\s*=/g, '"$1":')
     .replace(/\r?\n/g, ' ')
-    .replace(/\\/g, '\\\\')
     .replace(/,\s*\}/g, '}');
 
   try {
