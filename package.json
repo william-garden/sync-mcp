@@ -1,6 +1,6 @@
 {
   "name": "sync-mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "One-click synchronization tool for MCP configuration.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

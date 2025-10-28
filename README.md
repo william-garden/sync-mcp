@@ -21,7 +21,7 @@ sync-mcp is a Node.js-based command-line tool designed to solve the pain point o
 Execute synchronization directly by providing keywords for the source and target tools.
 
 ```bash
-npx sync-mcp <source_keyword> <target_keyword>
+npx -y sync-mcp <source_keyword> <target_keyword>
 ```
 
 ### 3.2. Interactive Sync
@@ -29,7 +29,7 @@ npx sync-mcp <source_keyword> <target_keyword>
 When the command is executed without any arguments, it enters interactive mode.
 
 ```bash
-npx sync-mcp
+npx -y sync-mcp
 ```
 
 Operation Flow:

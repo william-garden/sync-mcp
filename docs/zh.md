@@ -21,7 +21,7 @@
 通过提供源和目标工具的关键词，直接执行同步。
 
 ```bash
-npx sync-mcp <source_keyword> <target_keyword>
+npx -y sync-mcp <source_keyword> <target_keyword>
 ```
 
 ### 3.2. 交互同步
@@ -29,7 +29,7 @@ npx sync-mcp <source_keyword> <target_keyword>
 当不带任何参数执行命令时，进入交互式问答模式。
 
 ```bash
-npx sync-mcp
+npx -y sync-mcp
 ```
 
 操作流程:
