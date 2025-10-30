@@ -1,6 +1,6 @@
 {
   "name": "sync-mcp",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "One-click synchronization tool for MCP configuration.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -33,5 +33,12 @@
   },
   "dependencies": {
     "@inquirer/prompts": "^5.0.1"
-  }
+  },
+  "files": [
+    "bin/",
+    "docs/",
+    "src/",
+    "README.md",
+    "package.json" 
+  ]
 }
