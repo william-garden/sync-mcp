@@ -20,7 +20,7 @@ const TOOLS = [
     id: 'claude',
     name: 'Claude Code',
     keywords: ['claude', 'claude-code', 'claude code', 'anthropic'],
-    docs: 'https://docs.anthropic.com/en/docs/claude-code',
+    docs: 'https://docs.claude.com/en/docs/claude-code/settings',
     unixPath: ['.claude.json'],
     winPath: ['.claude.json'],
   },
@@ -100,8 +100,19 @@ async function runDirectSync(sourceKeyword, targetKeyword) {
   await performSync({ sourcePath, targetPath, sourceTool, targetTool });
 }
 
+function clearTerminal() {
+  if (!process.stdout.isTTY) {
+    return;
+  }
+
+  const clearCommand = process.platform === 'win32' ? '\x1Bc' : '\x1B[2J\x1B[3J\x1B[H';
+  process.stdout.write(clearCommand);
+}
+
 async function runInteractiveSync() {
-  console.log('Welcome to sync-mcp interactive mode.');
+  clearTerminal();
+
+  console.log("\x1b[41m ***** Welcome to sync-mcp interactive mode.***** \x1b[0m")
 
   const sourceChoice = await select({
     message: 'Select the configuration source file (选择源配置文件):',
@@ -110,6 +121,7 @@ async function runInteractiveSync() {
 
   const { sourcePath, sourceTool } = await resolveSourceSelection(sourceChoice);
 
+  clearTerminal();
   const targetChoice = await select({
     message: 'Select the configuration target file (选择目标配置文件):',
     choices: await buildTargetChoices({
@@ -120,6 +132,7 @@ async function runInteractiveSync() {
 
   const { targetPath, targetTool } = await resolveTargetSelection(targetChoice);
 
+  clearTerminal();
   await performSync({ sourcePath, targetPath, sourceTool, targetTool });
 }
 
