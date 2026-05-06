@@ -58,8 +58,9 @@ Operation Flow:
 | Claude Code | `claude`, `claude-code`, `claude code`, `anthropic` |  
 | Cursor | `cursor`, `cursor ide` |  
 | Gemini CLI | `gemini`, `gemini cli`, `google`, `gcloud` |  
-| GitHub Copilot CLI | `copilot`, `copilot` `cli`, `github`, `gh` |  
+| GitHub Copilot CLI | `copilot`, `copilot cli`, `github`, `gh` |  
 | Visual Studio Code | `vscode`, `vs code`, `vs-code`, `code` |
+| OpenCode | `opencode`, `open code`, `anomaly` |
 
 ## 5. Supported Tools and Configuration Paths
 
@@ -71,22 +72,31 @@ Operation Flow:
 | Gemini CLI (gcloud) | `~/.gemini/settings.json` | `%APPDATA%\.gemini\settings.json` | [Gemini CLI MCP server](https://github.com/google-gemini/gemini-cli/blob/main/docs/tools/mcp-server.md) |
 | GitHub Copilot CLI | `~/.copilot/mcp-config.json` | `%USERPROFILE%\.copilot\mcp-config.json` | [Copilot CLI MCP usage](https://github.com/github/docs/blob/main/content/copilot/how-tos/use-copilot-agents/use-copilot-cli.md) |
 | Visual Studio Code | `~/.vscode/mcp.json` | `%APPDATA%\Roaming\Code\User\mcp.json` | [VS Code MCP servers](https://code.visualstudio.com/docs/copilot/copilot-customization/copilot/chat/mcp-servers) |
+| OpenCode | `~/.opencode/opencode.json` | `%USERPROFILE%\.opencode\opencode.json` | [OpenCode MCP guide](https://opencode.ai/docs/mcp-servers) |
 
 ### 5.1. Codex
 
 Default configuration file: `~/.codex/config.toml`
 
 ```toml
-# ~/.codex/config.toml  
-[mcp_servers.context7]  
-command ="cmd"  
-args = [  
-    "/c", "npx", "-y",  
-    "@upstash/context7-mcp",  
-    "--api-key="YOUR_API_KEY",  
-    "--stdio"  
-]  
-env = { SystemRoot="C:\\Windows", PROGRAMFILES="C:\\Program Files" }  
+[mcp_servers.context7]
+command = "npx"
+args = [
+    "-y",
+    "@upstash/context7-mcp",
+    "--api-key",
+    "YOUR_API_KEY"
+]
+env = {}
+startup_timeout_ms = 60_000
+```
+
+**Alternative - Remote HTTP Server:**
+
+```toml
+[mcp_servers.context7]
+url = "https://mcp.context7.com/mcp"
+bearer_token_env_var = "CONTEXT7_API_KEY"
 startup_timeout_ms = 60_000
 ```
 
@@ -168,6 +178,37 @@ Default configuration file: `~/.vscode/mcp.json`
             "args": ["-y", "@upstash/context7-mcp", "--api-key", "YOUR_API_KEY"]  
         }  
     }  
+}
+```
+
+### 5.7. OpenCode
+
+Default configuration file: `~/.opencode/opencode.json`
+
+**Local MCP Server (stdio type - Recommended):**
+```json
+{
+    "mcpServers": {
+        "context7": {
+            "type": "stdio",
+            "command": "npx",
+            "args": ["-y", "@upstash/context7-mcp", "--api-key", "YOUR_API_KEY"],
+            "env": {}
+        }
+    }
+}
+```
+
+**Remote MCP Server (sse type):**
+```json
+{
+    "mcpServers": {
+        "context7": {
+            "type": "sse",
+            "url": "https://mcp.context7.com/mcp",
+            "timeout": 5000
+        }
+    }
 }
 ```
 

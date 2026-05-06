@@ -62,6 +62,7 @@ npx -y sync-mcp
 | Gemini CLI | `gemini`, `gemini cli`, `google`, `gcloud` |
 | GitHub Copilot CLI | `copilot`, `copilot cli`, `github`, `gh` |
 | Visual Studio Code | `vscode`, `vs code`, `vs-code`, `code` |
+| OpenCode | `opencode`, `open code`, `anomaly` |
 
 ## 5. 支持的工具与配置路径
 
@@ -73,22 +74,31 @@ npx -y sync-mcp
 | Gemini CLI (gcloud) | `~/.gemini/settings.json` | `%APPDATA%\.gemini\settings.json` | [Gemini CLI MCP server](https://github.com/google-gemini/gemini-cli/blob/main/docs/tools/mcp-server.md) |
 | GitHub Copilot CLI | `~/.copilot/mcp-config.json` | `%USERPROFILE%\.copilot\mcp-config.json` | [Copilot CLI MCP usage](https://github.com/github/docs/blob/main/content/copilot/how-tos/use-copilot-agents/use-copilot-cli.md) |
 | Visual Studio Code | `~/.vscode/mcp.json` | `%APPDATA%\Roaming\Code\User\mcp.json` | [VS Code MCP servers](https://code.visualstudio.com/docs/copilot/copilot-customization/copilot/chat/mcp-servers) |
+| OpenCode | `~/.opencode/opencode.json` | `%USERPROFILE%\.opencode\opencode.json` | [OpenCode MCP guide](https://opencode.ai/docs/mcp-servers) |
 
 ### 5.1. Codex
 
 默认配置文件：`~/.codex/config.toml`
 
 ```toml
-# ~/.codex/config.toml
 [mcp_servers.context7]
-command ="cmd"
+command = "npx"
 args = [
-    "/c", "npx", "-y",
+    "-y",
     "@upstash/context7-mcp",
-    "--api-key="YOUR_API_KEY",
-    "--stdio"
+    "--api-key",
+    "YOUR_API_KEY"
 ]
-env = { SystemRoot="C:\\Windows", PROGRAMFILES="C:\\Program Files" }
+env = {}
+startup_timeout_ms = 60_000
+```
+
+**备选方案 - 远程 HTTP 服务器：**
+
+```toml
+[mcp_servers.context7]
+url = "https://mcp.context7.com/mcp"
+bearer_token_env_var = "CONTEXT7_API_KEY"
 startup_timeout_ms = 60_000
 ```
 
@@ -169,6 +179,39 @@ startup_timeout_ms = 60_000
         "context7": {
             "command": "npx",
             "args": ["-y", "@upstash/context7-mcp", "--api-key", "YOUR_API_KEY"]
+        }
+    }
+}
+```
+
+### 5.7. OpenCode
+
+默认配置文件：`~/.opencode/opencode.json`
+
+**本地 MCP 服务器（stdio 类型 - 推荐）：**
+
+```json
+{
+    "mcpServers": {
+        "context7": {
+            "type": "stdio",
+            "command": "npx",
+            "args": ["-y", "@upstash/context7-mcp", "--api-key", "YOUR_API_KEY"],
+            "env": {}
+        }
+    }
+}
+```
+
+**远程 MCP 服务器（sse 类型）：**
+
+```json
+{
+    "mcpServers": {
+        "context7": {
+            "type": "sse",
+            "url": "https://mcp.context7.com/mcp",
+            "timeout": 5000
         }
     }
 }
