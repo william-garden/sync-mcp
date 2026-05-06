@@ -4,6 +4,7 @@ const JSON_TOOL_CONFIG = {
   gemini: { serversKey: 'mcpServers' },
   copilot: { serversKey: 'mcpServers' },
   vscode: { serversKey: 'servers' },
+  opencode: { serversKey: 'mcpServers' },
 };
 
 const KNOWN_JSON_SERVER_KEYS = new Set([
@@ -37,7 +38,7 @@ const CODEX_EXTRA_BLACKLIST = new Set([
   'cwd',
 ]);
 
-export const SUPPORTED_TOOL_IDS = ['codex', 'claude', 'cursor', 'gemini', 'copilot', 'vscode'];
+export const SUPPORTED_TOOL_IDS = ['codex', 'claude', 'cursor', 'gemini', 'copilot', 'vscode', 'opencode'];
 
 export function parseToolConfig(toolId, rawContent) {
   if (typeof rawContent !== 'string') {
@@ -316,10 +317,8 @@ function buildCodexServer(serverId, canonicalServerInput, existingServerInput) {
   const remainingExtras = Object.keys(extras).length > 0 ? extras : undefined;
 
   const output = {
-    command: process.platform === 'win32' ? 'cmd' : baseCommand,
-    args: process.platform === 'win32'
-      ? ['/c', baseCommand, ...argsWithFlags]
-      : argsWithFlags,
+    command: baseCommand,
+    args: argsWithFlags,
     env: envWithDefaults,
     startup_timeout_ms: chooseStartupTimeout(timeoutFromExtras, existingServer.startup_timeout_ms),
     extra: remainingExtras,
