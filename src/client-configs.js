@@ -38,9 +38,8 @@ startup_timeout_ms = 60_000`,
         startup_timeout_ms: { type: 'number', required: false, default: 60000, description: '启动超时（毫秒）' },
       },
       notes: [
-        'Windows 平台自动补充 SystemRoot 和 PROGRAMFILES 环境变量',
         '使用 npx 命令时自动添加 -y 标志',
-        'Windows 上命令自动包装为 cmd /c 执行',
+        '跨平台支持（Linux, macOS, Windows）',
       ],
     },
   },
@@ -216,6 +215,45 @@ startup_timeout_ms = 60_000`,
       ],
     },
   },
+  {
+    id: 'opencode',
+    name: 'OpenCode',
+    vendor: 'Anomaly',
+    keywords: ['opencode', 'open code'],
+    docs: 'https://opencode.ai/docs/mcp-servers',
+    configPath: {
+      unix: '~/.opencode/opencode.json',
+      windows: '%USERPROFILE%\\.opencode\\opencode.json',
+    },
+    format: 'json',
+    serversKey: 'mcpServers',
+    schema: {
+      example: `{
+  "mcpServers": {
+    "server-name": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "package-name"],
+      "env": {}
+    }
+  }
+}`,
+      fields: {
+        type: { type: 'string', required: true, default: 'stdio', description: '服务器类型 (stdio 或 sse)' },
+        command: { type: 'string', required: true, description: '可执行命令（仅 stdio 类型）' },
+        args: { type: 'array', required: false, description: '命令参数数组' },
+        env: { type: 'object', required: false, description: '环境变量对象' },
+        url: { type: 'string', required: false, description: '远程服务器 URL（仅 sse 类型）' },
+        timeout: { type: 'number', required: false, default: 5000, description: '请求超时（毫秒）' },
+        cwd: { type: 'string', required: false, description: '工作目录' },
+        description: { type: 'string', required: false, description: '服务器描述' },
+      },
+      notes: [
+        '支持 stdio（本地命令）和 sse（远程服务）两种类型',
+        'stdio 类型需要指定 command，sse 类型需要指定 url',
+      ],
+    },
+  },
 ];
 
 /**
@@ -286,10 +324,10 @@ export function getTomlClients() {
  */
 export const FORMAT_SUMMARY = {
   json: {
-    clients: ['claude', 'cursor', 'gemini', 'copilot', 'vscode'],
+    clients: ['claude', 'cursor', 'gemini', 'copilot', 'opencode', 'vscode'],
     description: 'JSON 格式配置文件',
     commonStructure: {
-      mcpServers: '大多数客户端使用此键（claude, cursor, gemini, copilot）',
+      mcpServers: '大多数客户端使用此键（claude, cursor, gemini, copilot, opencode）',
       servers: 'VS Code 使用此键',
     },
   },
