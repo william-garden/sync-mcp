@@ -1,6 +1,6 @@
 {
   "name": "sync-mcp",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "One-click synchronization tool for MCP configuration.",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -39,6 +39,6 @@
     "docs/",
     "src/",
     "README.md",
-    "package.json" 
+    "package.json"
   ]
 }
