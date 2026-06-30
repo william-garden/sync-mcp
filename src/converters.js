@@ -4,7 +4,6 @@ const JSON_TOOL_CONFIG = {
   gemini: { serversKey: 'mcpServers' },
   copilot: { serversKey: 'mcpServers' },
   vscode: { serversKey: 'servers' },
-  opencode: { serversKey: 'mcpServers' },
 };
 
 const KNOWN_JSON_SERVER_KEYS = new Set([
@@ -24,13 +23,14 @@ const KNOWN_JSON_SERVER_KEYS = new Set([
   'meta',
 ]);
 
-const JSON_EXTRA_BLACKLIST = new Set(['startup_timeout_ms']);
+const JSON_EXTRA_BLACKLIST = new Set(['startup_timeout_ms', 'startup_timeout_sec']);
 
 const CODEX_EXTRA_BLACKLIST = new Set([
   'command',
   'args',
   'env',
   'startup_timeout_ms',
+  'startup_timeout_sec',
   'extra',
   'type',
   'transport',
@@ -45,12 +45,16 @@ export function parseToolConfig(toolId, rawContent) {
     throw new Error('Configuration content must be a string.');
   }
 
-  if (JSON_TOOL_CONFIG[toolId]) {
-    return parseJsonTool(toolId, rawContent);
-  }
-
   if (toolId === 'codex') {
     return parseCodexTool(rawContent);
+  }
+
+  if (toolId === 'opencode') {
+    return parseOpenCodeTool(rawContent);
+  }
+
+  if (JSON_TOOL_CONFIG[toolId]) {
+    return parseJsonTool(toolId, rawContent);
   }
 
   throw new Error(`Unsupported tool identifier for parsing: ${toolId}`);
@@ -60,12 +64,16 @@ export function formatToolConfig(toolId, canonicalInput, options = {}) {
   const canonical = ensureCanonical(canonicalInput);
   const meta = options.meta ?? null;
 
-  if (JSON_TOOL_CONFIG[toolId]) {
-    return formatJsonTool(toolId, canonical, meta);
-  }
-
   if (toolId === 'codex') {
     return formatCodexTool(canonical, meta);
+  }
+
+  if (toolId === 'opencode') {
+    return formatOpenCodeTool(canonical, meta);
+  }
+
+  if (JSON_TOOL_CONFIG[toolId]) {
+    return formatJsonTool(toolId, canonical, meta);
   }
 
   throw new Error(`Unsupported tool identifier for formatting: ${toolId}`);
@@ -171,6 +179,9 @@ function buildJsonServer(toolId, canonicalServerInput, existingServerInput) {
 
   if (toolId === 'claude') {
     result.type = canonicalServer.type ?? existingServer.type ?? 'stdio';
+  } else if (toolId === 'copilot') {
+    const type = canonicalServer.type ?? existingServer.type ?? 'stdio';
+    result.type = type === 'stdio' ? 'local' : type;
   } else if (canonicalServer.type) {
     result.type = canonicalServer.type;
   }
@@ -310,17 +321,17 @@ function buildCodexServer(serverId, canonicalServerInput, existingServerInput) {
   const argsWithFlags = ensureCommandArgs(baseCommand, baseArgs);
 
   const extras = mergeExtras(existingServer.extra, canonicalServer.extra);
-  const timeoutFromExtras = typeof extras.startup_timeout_ms === 'number'
-    ? extras.startup_timeout_ms
+  const timeoutFromExtras = typeof extras.startup_timeout_sec === 'number'
+    ? extras.startup_timeout_sec
     : undefined;
-  delete extras.startup_timeout_ms;
+  delete extras.startup_timeout_sec;
   const remainingExtras = Object.keys(extras).length > 0 ? extras : undefined;
 
   const output = {
     command: baseCommand,
     args: argsWithFlags,
     env: envWithDefaults,
-    startup_timeout_ms: chooseStartupTimeout(timeoutFromExtras, existingServer.startup_timeout_ms),
+    startup_timeout_sec: chooseStartupTimeoutSec(timeoutFromExtras, existingServer.startup_timeout_sec),
     extra: remainingExtras,
   };
 
@@ -340,14 +351,14 @@ function ensureCodexEnv(envInput) {
   return env;
 }
 
-function chooseStartupTimeout(timeoutFromExtras, existingValue) {
+function chooseStartupTimeoutSec(timeoutFromExtras, existingValue) {
   if (typeof timeoutFromExtras === 'number') {
     return timeoutFromExtras;
   }
   if (typeof existingValue === 'number') {
     return existingValue;
   }
-  return 60_000;
+  return 60;
 }
 
 function ensureCommandArgs(command, argsInput) {
@@ -375,14 +386,14 @@ function normalizeCodexExisting(existing) {
     command: typeof existing.command === 'string' ? existing.command : undefined,
     args: Array.isArray(existing.args) ? existing.args.map(String) : [],
     env: normalizeEnv(existing.env),
-    startup_timeout_ms: typeof existing.startup_timeout_ms === 'number'
-      ? existing.startup_timeout_ms
+    startup_timeout_sec: typeof existing.startup_timeout_sec === 'number'
+      ? existing.startup_timeout_sec
       : undefined,
     extra: {},
   };
 
   for (const [key, value] of Object.entries(existing)) {
-    if (!['command', 'args', 'env', 'startup_timeout_ms'].includes(key)) {
+    if (!['command', 'args', 'env', 'startup_timeout_ms', 'startup_timeout_sec'].includes(key)) {
       result.extra[key] = value;
     }
   }
@@ -417,7 +428,7 @@ function renderCodexSection(serverId, serverConfig) {
     lines.push(`env = { ${envContent} }`);
   }
 
-  lines.push(`startup_timeout_ms = ${formatNumberWithUnderscores(serverConfig.startup_timeout_ms ?? 60_000)}`);
+  lines.push(`startup_timeout_sec = ${serverConfig.startup_timeout_sec ?? 60}`);
 
   if (serverConfig.extra && Object.keys(serverConfig.extra).length > 0) {
     for (const [key, value] of Object.entries(serverConfig.extra)) {
@@ -606,11 +617,14 @@ function fromJsonServer(server) {
     }
   }
 
+  let type = typeof server.type === 'string' ? server.type : undefined;
+  if (type === 'local') type = 'stdio';
+
   return {
     command: typeof server.command === 'string' ? server.command : undefined,
     args: Array.isArray(server.args) ? server.args.map(String) : [],
     env: normalizeEnv(server.env),
-    type: typeof server.type === 'string' ? server.type : undefined,
+    type,
     transport: typeof server.transport === 'string' ? server.transport : undefined,
     cwd: typeof server.cwd === 'string' ? server.cwd : undefined,
     description: typeof server.description === 'string' ? server.description : undefined,
@@ -650,9 +664,9 @@ function fromCodexServer(server) {
     extra: extras,
   };
 
-  if (typeof server.startup_timeout_ms === 'number') {
+  if (typeof server.startup_timeout_sec === 'number') {
     result.extra ??= {};
-    result.extra.startup_timeout_ms = server.startup_timeout_ms;
+    result.extra.startup_timeout_sec = server.startup_timeout_sec;
   }
 
   for (const [key, value] of Object.entries(server)) {
@@ -681,6 +695,134 @@ function fromCodexServer(server) {
   }
 
   return result;
+}
+
+function parseOpenCodeTool(rawContent) {
+  let parsed;
+  try {
+    parsed = JSON.parse(rawContent);
+  } catch (error) {
+    throw new Error(`Invalid JSON configuration: ${error.message ?? error}`);
+  }
+
+  const serversSection = parsed?.['mcp'];
+
+  if (serversSection && typeof serversSection !== 'object') {
+    throw new Error('Expected "mcp" to be an object in the configuration file.');
+  }
+
+  const canonicalServers = {};
+  if (serversSection) {
+    for (const [serverId, serverConfig] of Object.entries(serversSection)) {
+      if (!serverConfig || typeof serverConfig !== 'object') {
+        continue;
+      }
+      canonicalServers[serverId] = normalizeCanonicalServer(fromOpenCodeServer(serverConfig));
+    }
+  }
+
+  const rest = clone(parsed);
+  if (rest && typeof rest === 'object') {
+    delete rest['mcp'];
+  }
+
+  return {
+    canonical: { servers: canonicalServers },
+    meta: {
+      serversKey: 'mcp',
+      rest,
+      existingServers: clone(serversSection ?? {}),
+      order: Object.keys(serversSection ?? {}),
+    },
+  };
+}
+
+function formatOpenCodeTool(canonical, meta) {
+  const rest = meta?.rest ? clone(meta.rest) : {};
+  const existingServers = meta?.existingServers ? clone(meta.existingServers) : {};
+
+  const outputServers = { ...existingServers };
+  const canonicalServers = canonical.servers ?? {};
+
+  for (const [serverId, canonicalServer] of Object.entries(canonicalServers)) {
+    const existingServer = existingServers?.[serverId];
+    outputServers[serverId] = buildOpenCodeServer(canonicalServer, existingServer);
+  }
+
+  rest['mcp'] = outputServers;
+  return `${JSON.stringify(rest, null, 2)}\n`;
+}
+
+function fromOpenCodeServer(server) {
+  if (!server || typeof server !== 'object') {
+    return {};
+  }
+
+  let command, args;
+  if (Array.isArray(server.command)) {
+    command = server.command[0];
+    args = server.command.slice(1).map(String);
+  } else if (typeof server.command === 'string') {
+    command = server.command;
+    args = [];
+  }
+
+  const env = normalizeEnv(server.environment ?? server.env);
+
+  let type = typeof server.type === 'string' ? server.type : undefined;
+  if (type === 'local') type = 'stdio';
+  if (type === 'remote') type = 'http';
+
+  const extras = {};
+  for (const [key, value] of Object.entries(server)) {
+    if (!['type', 'command', 'environment', 'env', 'cwd', 'enabled', 'timeout', 'url', 'headers', 'oauth'].includes(key)) {
+      extras[key] = value;
+    }
+  }
+
+  return {
+    command,
+    args: args ?? [],
+    env,
+    type,
+    cwd: typeof server.cwd === 'string' ? server.cwd : undefined,
+    extra: extras,
+  };
+}
+
+function buildOpenCodeServer(canonicalServerInput, existingServerInput) {
+  const canonicalServer = normalizeCanonicalServer(canonicalServerInput);
+  const existingServer = existingServerInput ? fromOpenCodeServer(existingServerInput) : {};
+
+  const result = {};
+
+  const type = canonicalServer.type ?? existingServer.type ?? 'stdio';
+  result.type = type === 'stdio' ? 'local' : (type === 'http' ? 'remote' : type);
+
+  const command = canonicalServer.command ?? existingServer.command;
+  const args = canonicalServer.args ?? existingServer.args ?? [];
+  if (command) {
+    result.command = args.length > 0 ? [command, ...args] : [command];
+  }
+
+  const cwd = canonicalServer.cwd ?? existingServer.cwd;
+  if (cwd) {
+    result.cwd = cwd;
+  }
+
+  const env = mergeEnv(existingServer.env, canonicalServer.env);
+  if (env && Object.keys(env).length > 0) {
+    result.environment = env;
+  }
+
+  const extras = mergeExtras(existingServer.extra, canonicalServer.extra);
+  for (const [key, value] of Object.entries(extras)) {
+    if (result[key] === undefined) {
+      result[key] = value;
+    }
+  }
+
+  return pruneUndefined(result);
 }
 
 function normalizeCanonical(canonical) {

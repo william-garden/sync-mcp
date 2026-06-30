@@ -12,7 +12,7 @@ const TOOLS = [
     id: 'codex',
     name: 'Codex',
     keywords: ['codex', 'openai', 'codex cli'],
-    docs: 'https://github.com/openai/codex/blob/main/docs/config.md',
+    docs: 'https://developers.openai.com/codex/mcp',
     unixPath: ['.codex', 'config.toml'],
     winPath: ['.codex', 'config.toml'],
   },
@@ -20,7 +20,7 @@ const TOOLS = [
     id: 'claude',
     name: 'Claude Code',
     keywords: ['claude', 'claude-code', 'claude code', 'anthropic'],
-    docs: 'https://docs.claude.com/en/docs/claude-code/settings',
+    docs: 'https://code.claude.com/docs/en/mcp',
     unixPath: ['.claude.json'],
     winPath: ['.claude.json'],
   },
@@ -28,7 +28,7 @@ const TOOLS = [
     id: 'cursor',
     name: 'Cursor',
     keywords: ['cursor', 'cursor ide'],
-    docs: 'https://docs.cursor.com/context/mcp',
+    docs: 'https://cursor.com/docs/mcp',
     unixPath: ['.cursor', 'mcp.json'],
     winPath: ['.cursor', 'mcp.json'],
   },
@@ -44,7 +44,7 @@ const TOOLS = [
     id: 'copilot',
     name: 'GitHub Copilot CLI',
     keywords: ['copilot', 'copilot cli', 'github', 'gh'],
-    docs: 'https://github.com/github/docs/blob/main/content/copilot/how-tos/use-copilot-agents/use-copilot-cli.md',
+    docs: 'https://docs.github.com/en/copilot/how-tos/copilot-cli/customize-copilot/add-mcp-servers',
     unixPath: ['.copilot', 'mcp-config.json'],
     winPath: ['.copilot', 'mcp-config.json'],
   },
@@ -52,11 +52,21 @@ const TOOLS = [
     id: 'vscode',
     name: 'Visual Studio Code',
     keywords: ['vscode', 'vs code', 'vs-code', 'code'],
-    docs: 'https://code.visualstudio.com/docs/copilot/copilot-customization/copilot/chat/mcp-servers',
-    unixPath: ['.vscode', 'mcp.json'],
+    docs: 'https://code.visualstudio.com/docs/agent-customization/mcp-servers',
+    macPath: ['Library', 'Application Support', 'Code', 'User', 'mcp.json'],
+    unixPath: ['.config', 'Code', 'User', 'mcp.json'],
     winPath: ['Code', 'User', 'mcp.json'],
-    base: 'appdata',
-  }
+    winBase: 'appdata',
+  },
+  {
+    id: 'opencode',
+    name: 'OpenCode',
+    keywords: ['opencode', 'open code', 'anomaly'],
+    docs: 'https://opencode.ai/docs/mcp-servers',
+    unixPath: ['.config', 'opencode', 'opencode.json'],
+    winPath: ['opencode', 'opencode.json'],
+    winBase: 'localappdata',
+  },
 ];
 
 async function main() {
@@ -368,28 +378,30 @@ async function fileExists(filePath) {
 }
 
 function resolveToolPath(tool) {
-  const segments = process.platform === 'win32'
-    ? tool.winPath
+  if (process.platform === 'win32') {
+    const base = tool.winBase === 'localappdata' ? getLocalAppDataDirectory() : getAppDataDirectory();
+    return path.resolve(path.join(base, ...tool.winPath));
+  }
+
+  const segments = process.platform === 'darwin' && tool.macPath
+    ? tool.macPath
     : tool.unixPath;
 
-    
-  const baseDirectory = determineBaseDirectory(tool);
-  return path.resolve(path.join(baseDirectory, ...segments));
-}
-
-function determineBaseDirectory(tool) {
-  if (tool.base === 'appdata') {
-    return getAppDataDirectory();
-  }
-  return os.homedir();
+  return path.resolve(path.join(os.homedir(), ...segments));
 }
 
 function getAppDataDirectory() {
   if (process.env.APPDATA) {
     return process.env.APPDATA;
   }
-
   return path.join(os.homedir(), 'AppData', 'Roaming');
+}
+
+function getLocalAppDataDirectory() {
+  if (process.env.LOCALAPPDATA) {
+    return process.env.LOCALAPPDATA;
+  }
+  return path.join(os.homedir(), 'AppData', 'Local');
 }
 
 function normalizeForComparison(filePath) {
